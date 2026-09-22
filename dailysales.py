@@ -1,5 +1,16 @@
+import os
 import sqlite3
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+
+if not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
+    matplotlib.use("Agg")
+
+try:
+    import seaborn as sns
+except ModuleNotFoundError:
+    sns = None
 
 # Connect to database
 conn = sqlite3.connect('dailysales.db')
@@ -93,3 +104,33 @@ result = pd.read_sql_query(query, conn)
 print(result)
 
 conn.close()
+# Set up plotting
+if sns is not None:
+    sns.set_theme(style="whitegrid")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    sns.barplot(
+        data=result,
+        x="rep_name",
+        y="total_sales",
+        hue="store_name",
+        palette="viridis",
+        ax=ax,
+    )
+else:
+    fig, ax = plt.subplots(figsize=(8, 4))
+    result.plot(kind="bar", x="rep_name", y="commission_earned", ax=ax, legend=True)
+
+# Formatting chart titles and labels
+ax.set_title("Total Sales Revenue By Sales Representative", fontsize=12, fontweight="bold")
+ax.set_xlabel("Sales Representative", fontsize=10)
+ax.set_ylabel("Total Revenue ($)", fontsize=10)
+
+# Save chart automatically
+plt.tight_layout()
+plt.savefig("total_sales_chart.png", dpi=150)
+
+# Display only when a GUI backend is available
+if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
+    plt.show()
+
+plt.close()
