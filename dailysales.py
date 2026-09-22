@@ -104,33 +104,50 @@ result = pd.read_sql_query(query, conn)
 print(result)
 
 conn.close()
-# Set up plotting
+
+# Chart 1: commission earned per rep
 if sns is not None:
     sns.set_theme(style="whitegrid")
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig1, ax1 = plt.subplots(figsize=(8, 4))
+    sns.barplot(
+        data=result,
+        x="rep_name",
+        y="commission_earned",
+        hue="store_name",
+        palette="viridis",
+        ax=ax1,
+    )
+else:
+    fig1, ax1 = plt.subplots(figsize=(8, 4))
+    result.plot(kind="bar", x="rep_name", y="commission_earned", ax=ax1, legend=True)
+
+ax1.set_title("Executive Summary: Sales Rep Commission", fontsize=12, fontweight="bold")
+ax1.set_xlabel("Sales Rep", fontsize=10)
+ax1.set_ylabel("Commission Earned", fontsize=10)
+plt.tight_layout()
+fig1.savefig("sales_commission_report.png", dpi=150)
+
+# Chart 2: total sales vs representative
+fig2, ax2 = plt.subplots(figsize=(8, 4))
+if sns is not None:
     sns.barplot(
         data=result,
         x="rep_name",
         y="total_sales",
         hue="store_name",
-        palette="viridis",
-        ax=ax,
+        palette="magma",
+        ax=ax2,
     )
 else:
-    fig, ax = plt.subplots(figsize=(8, 4))
-    result.plot(kind="bar", x="rep_name", y="commission_earned", ax=ax, legend=True)
+    result.plot(kind="bar", x="rep_name", y="total_sales", ax=ax2, legend=True)
 
-# Formatting chart titles and labels
-ax.set_title("Total Sales Revenue By Sales Representative", fontsize=12, fontweight="bold")
-ax.set_xlabel("Sales Representative", fontsize=10)
-ax.set_ylabel("Total Revenue ($)", fontsize=10)
-
-# Save chart automatically
+ax2.set_title("Total Sales Revenue By Sales Representative", fontsize=12, fontweight="bold")
+ax2.set_xlabel("Sales Representative", fontsize=10)
+ax2.set_ylabel("Total Revenue ($)", fontsize=10)
 plt.tight_layout()
-plt.savefig("total_sales_chart.png", dpi=150)
+fig2.savefig("sales_total_report.png", dpi=150)
 
-# Display only when a GUI backend is available
+# Display both charts when a GUI backend is available
 if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
     plt.show()
-
 plt.close()
